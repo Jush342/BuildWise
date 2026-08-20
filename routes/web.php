@@ -1,0 +1,27 @@
+<?php
+
+use App\Http\Controllers\Bookings\BookingController;
+use App\Http\Controllers\Clients\ClientController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Services\ServiceController;
+use App\Http\Controllers\Teams\TeamInvitationController;
+use App\Http\Middleware\EnsureTeamMembership;
+use Illuminate\Support\Facades\Route;
+
+Route::inertia('/', 'welcome')->name('home');
+
+Route::prefix('{current_team}')
+    ->middleware(['auth', 'verified', EnsureTeamMembership::class])
+    ->group(function () {
+        Route::get('dashboard', DashboardController::class)->name('dashboard');
+        Route::resource('clients', ClientController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('services', ServiceController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('bookings', BookingController::class)->only(['index', 'store']);
+    });
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
+    Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');
+});
+
+require __DIR__.'/settings.php';
