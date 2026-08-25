@@ -55,3 +55,52 @@ test('overlapping bookings are rejected', function () {
         ])
         ->assertSessionHasErrors('start_time');
 });
+
+test('a confirmed booking can be completed and cancelled', function () {
+    $user = User::factory()->create();
+    $client = Client::factory()->create(['team_id' => $user->current_team_id]);
+    $booking = Booking::factory()->create([
+        'team_id' => $user->current_team_id,
+        'client_id' => $client->id,
+        'booking_date' => '2026-09-01',
+        'start_time' => '09:00',
+        'end_time' => '12:00',
+    ]);
+
+    $this->actingAs($user)
+        ->put(route('bookings.update', [$user->currentTeam, $booking]), ['status' => 'completed'])
+        ->assertRedirect(route('bookings.index', $user->currentTeam));
+
+    expect($booking->refresh()->status)->toBe(Booking::STATUS_COMPLETED);
+
+    $cancelledBooking = Booking::factory()->create([
+        'team_id' => $user->current_team_id,
+        'client_id' => $client->id,
+        'booking_date' => '2026-09-02',
+        'start_time' => '09:00',
+        'end_time' => '12:00',
+    ]);
+
+    $this->actingAs($user)
+        ->put(route('bookings.update', [$user->currentTeam, $cancelledBooking]), ['status' => 'cancelled'])
+        ->assertRedirect(route('bookings.index', $user->currentTeam));
+
+    expect($cancelledBooking->refresh()->status)->toBe(Booking::STATUS_CANCELLED);
+});
+
+test('completed bookings cannot change status', function () {
+    $user = User::factory()->create();
+    $client = Client::factory()->create(['team_id' => $user->current_team_id]);
+    $booking = Booking::factory()->create([
+        'team_id' => $user->current_team_id,
+        'client_id' => $client->id,
+        'booking_date' => '2026-09-01',
+        'start_time' => '09:00',
+        'end_time' => '12:00',
+        'status' => Booking::STATUS_COMPLETED,
+    ]);
+
+    $this->actingAs($user)
+        ->put(route('bookings.update', [$user->currentTeam, $booking]), ['status' => 'cancelled'])
+        ->assertForbidden();
+});

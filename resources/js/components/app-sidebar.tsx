@@ -1,7 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, CalendarDays, FolderGit2, LayoutGrid, Users, Wrench } from 'lucide-react';
+import { CalendarDays, CreditCard, LayoutGrid, Package, Users, Wrench } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { TeamSwitcher } from '@/components/team-switcher';
@@ -15,9 +14,11 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { index as clientsIndex } from '@/routes/clients';
-import { index as servicesIndex } from '@/routes/services';
+import { index as billingIndex } from '@/routes/billing';
 import { index as bookingsIndex } from '@/routes/bookings';
+import { index as clientsIndex } from '@/routes/clients';
+import { index as inventoryIndex } from '@/routes/inventory';
+import { index as servicesIndex } from '@/routes/services';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
@@ -33,6 +34,12 @@ export function AppSidebar() {
         : '/';
     const bookingsUrl = page.props.currentTeam
         ? bookingsIndex(page.props.currentTeam.slug)
+        : '/';
+    const billingUrl = page.props.currentTeam
+        ? billingIndex(page.props.currentTeam.slug)
+        : '/';
+    const inventoryUrl = page.props.currentTeam
+        ? inventoryIndex(page.props.currentTeam.slug)
         : '/';
 
     const mainNavItems: NavItem[] = [
@@ -56,18 +63,15 @@ export function AppSidebar() {
             href: bookingsUrl,
             icon: CalendarDays,
         },
-    ];
-
-    const footerNavItems: NavItem[] = [
         {
-            title: 'Repository',
-            href: 'https://github.com/laravel/react-starter-kit',
-            icon: FolderGit2,
+            title: 'Billing',
+            href: billingUrl,
+            icon: CreditCard,
         },
         {
-            title: 'Documentation',
-            href: 'https://laravel.com/docs/starter-kits#react',
-            icon: BookOpen,
+            title: 'Inventory',
+            href: inventoryUrl,
+            icon: Package,
         },
     ];
 
@@ -95,7 +99,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

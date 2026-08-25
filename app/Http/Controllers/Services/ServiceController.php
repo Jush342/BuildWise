@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Services;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Services\SaveServiceRequest;
 use App\Models\Service;
+use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -16,11 +17,18 @@ class ServiceController extends Controller
     public function index(Request $request): Response
     {
         Gate::authorize('viewAny', Service::class);
+        $search = trim((string) $request->query('search', ''));
+        $services = $request->user()->currentTeam->services()
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search): void {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
+            }))
+            ->orderBy('name')
+            ->get(['id', 'name', 'hourly_rate', 'status']);
 
         return Inertia::render('services/index', [
-            'services' => $request->user()->currentTeam->services()
-                ->orderBy('name')
-                ->get(['id', 'name', 'hourly_rate', 'status']),
+            'services' => $services,
+            'search' => $search,
         ]);
     }
 
@@ -33,7 +41,7 @@ class ServiceController extends Controller
         return to_route('services.index', ['current_team' => $request->user()->currentTeam]);
     }
 
-    public function update(SaveServiceRequest $request, Service $service): RedirectResponse
+    public function update(SaveServiceRequest $request, Team $currentTeam, Service $service): RedirectResponse
     {
         Gate::authorize('update', $service);
 
@@ -42,7 +50,7 @@ class ServiceController extends Controller
         return to_route('services.index', ['current_team' => $request->user()->currentTeam]);
     }
 
-    public function destroy(Request $request, Service $service): RedirectResponse
+    public function destroy(Request $request, Team $currentTeam, Service $service): RedirectResponse
     {
         Gate::authorize('delete', $service);
 

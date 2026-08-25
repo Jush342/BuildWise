@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Bookings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Bookings\SaveBookingRequest;
+use App\Http\Requests\Bookings\UpdateBookingRequest;
 use App\Models\Booking;
+use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,29 +20,25 @@ class BookingController extends Controller
     public function index(Request $request): Response
     {
         Gate::authorize('viewAny', Booking::class);
+        $search = trim((string) $request->query('search', ''));
+        $bookings = $request->user()->currentTeam->bookings()
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search): void {
+                $query->whereHas('client', fn ($clientQuery) => $clientQuery->where('name', 'like', "%{$search}%"))
+                    ->orWhere('status', 'like', "%{$search}%");
+            }))
+            ->with(['client', 'details.service', 'billingTransaction'])
+            ->latest('booking_date')
+            ->latest('start_time')
+            ->get();
 
         return Inertia::render('bookings/index', [
-            'bookings' => $request->user()->currentTeam->bookings()
-                ->with(['client', 'details.service', 'billingTransaction'])
-                ->latest('booking_date')
-                ->latest('start_time')
-                ->get(),
+            'bookings' => $bookings,
             'clients' => $request->user()->currentTeam->clients()->orderBy('name')->get(['id', 'name']),
             'services' => $request->user()->currentTeam->services()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'hourly_rate']),
+            'search' => $search,
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(SaveBookingRequest $request): RedirectResponse
     {
         Gate::authorize('create', Booking::class);
@@ -75,6 +73,15 @@ class BookingController extends Controller
                 'balance' => $total,
             ]);
         });
+
+        return to_route('bookings.index', ['current_team' => $request->user()->currentTeam]);
+    }
+
+    public function update(UpdateBookingRequest $request, Team $currentTeam, Booking $booking): RedirectResponse
+    {
+        Gate::authorize('update', $booking);
+
+        $booking->update($request->validated());
 
         return to_route('bookings.index', ['current_team' => $request->user()->currentTeam]);
     }

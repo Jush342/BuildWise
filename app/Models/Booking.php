@@ -13,10 +13,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Fillable(['team_id', 'client_id', 'booking_date', 'start_time', 'end_time', 'status', 'total_amount'])]
 class Booking extends Model
 {
+    public const STATUS_CONFIRMED = 'confirmed';
+
+    public const STATUS_COMPLETED = 'completed';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
     /** @use HasFactory<BookingFactory> */
     use HasFactory;
 
-    protected $attributes = ['status' => 'confirmed', 'total_amount' => 0];
+    protected $attributes = ['status' => self::STATUS_CONFIRMED, 'total_amount' => 0];
 
     public function team(): BelongsTo
     {

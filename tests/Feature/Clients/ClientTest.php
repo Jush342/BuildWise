@@ -16,6 +16,19 @@ test('the clients page can be rendered', function () {
             ->has('clients'));
 });
 
+test('clients can be searched within the current team', function () {
+    $user = User::factory()->create();
+    Client::factory()->create(['team_id' => $user->current_team_id, 'name' => 'Northstar Builders']);
+    Client::factory()->create(['team_id' => $user->current_team_id, 'name' => 'Southside Plumbing']);
+
+    $this->actingAs($user)
+        ->get(route('clients.index', [$user->currentTeam, 'search' => 'Northstar']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('search', 'Northstar')
+            ->has('clients', 1)
+            ->where('clients.0.name', 'Northstar Builders'));
+});
+
 test('clients can be created and are assigned to the current team', function () {
     $user = User::factory()->create();
 

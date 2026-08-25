@@ -1,14 +1,14 @@
 # BuildWise
 
 Construction Services Management System (CSMS) built with Laravel, Inertia.js,
-React, TypeScript, Tailwind CSS, and MySQL/MariaDB.
+React, TypeScript, Tailwind CSS, and PostgreSQL through Supabase.
 
 ## Requirements
 
 - PHP 8.3 or newer
 - Composer
 - Node.js and npm
-- XAMPP MySQL/MariaDB
+- Supabase PostgreSQL project
 - Git
 
 ## Installation
@@ -36,19 +36,22 @@ php artisan key:generate
 
 ## Database Setup
 
-Start MySQL/MariaDB from XAMPP, then create a database named `csms` in
-phpMyAdmin or MySQL.
+Create a Supabase project and open **Connect** to copy the PostgreSQL connection
+details. Use the shared pooler values for a simple local connection.
 
 Update the database section in `.env`:
 
 ```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=csms
-DB_USERNAME=root
-DB_PASSWORD=
+DB_CONNECTION=pgsql
+DB_HOST=your-supabase-host
+DB_PORT=5432
+DB_DATABASE=postgres
+DB_USERNAME=your-supabase-username
+DB_PASSWORD=your-supabase-password
+DB_SSLMODE=require
 ```
+
+Keep `.env` private and never commit database credentials.
 
 Run the migrations:
 
@@ -62,6 +65,14 @@ Check the database connection and migration status with:
 php artisan config:clear
 php artisan migrate:status
 ```
+
+Create the development account:
+
+```powershell
+php artisan db:seed
+```
+
+The seeded account is `test@example.com` with the password `password`.
 
 ## Running the Application
 
@@ -98,13 +109,17 @@ composer run dev
 - Service and hourly-rate CRUD
 - Team-scoped data access
 - Booking creation
+- Booking completion and cancellation
+- Server-side search across clients, services, bookings, billing, and inventory
 - Multiple services per booking
 - Server-side charge calculation
 - Overlapping schedule validation
 - Automatic invoice generation
-- Billing transaction database structure
-- Payment database structure
-- Inventory database structure
+- Billing and invoice management
+- Payment recording and balance tracking
+- Inventory CRUD management
+- Dashboard operational metrics and inventory alerts
+- Temporary BuildWise landing page
 
 ## Project Structure
 
@@ -187,7 +202,11 @@ Feature tests are located in `tests/Feature`. Current CSMS tests cover:
 
 - Client rendering, creation, validation, and team isolation
 - Service rendering, creation, validation, and team isolation
-- Booking totals, invoice creation, and overlapping schedule validation
+- Booking totals, invoice creation, status changes, and overlapping schedule validation
+- Billing rendering, payment balance updates, and overpayment protection
+- Inventory rendering, creation, updates, and team isolation
+- Dashboard metrics and invitation visibility
+- Client search behavior
 
 Run the focused CSMS tests with:
 
@@ -197,11 +216,11 @@ php artisan test --compact tests/Feature/Clients/ClientTest.php tests/Feature/Se
 
 ## Development Roadmap
 
-- Payment processing interface
-- Inventory CRUD interface
-- Billing and invoice management pages
-- Dashboard analytics and charts
-- Revenue and service reports
-- Weekly calendar schedule
-- Search and filtering
-- Responsive UI polish
+- Interactive weekly calendar
+- Revenue charts
+- Booking editing and rescheduling
+- External payment gateway integration and refunds
+- Inventory stock movement history and automatic deductions
+- Reports and transaction history
+- Role-based permissions for business modules
+- Final responsive UI polish

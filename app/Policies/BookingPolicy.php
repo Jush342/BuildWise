@@ -36,7 +36,14 @@ class BookingPolicy
      */
     public function update(User $user, Booking $booking): bool
     {
-        return $user->isCurrentTeam($booking->team);
+        return $user->isCurrentTeam($booking->team)
+            && $booking->status === Booking::STATUS_CONFIRMED;
+    }
+
+    public function manageBilling(User $user, Booking $booking): bool
+    {
+        return $user->isCurrentTeam($booking->team)
+            && $booking->status !== Booking::STATUS_CANCELLED;
     }
 
     /**

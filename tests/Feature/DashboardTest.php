@@ -1,6 +1,10 @@
 <?php
 
 use App\Enums\TeamRole;
+use App\Models\BillingTransaction;
+use App\Models\Booking;
+use App\Models\Client;
+use App\Models\Inventory;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
@@ -23,6 +27,41 @@ test('authenticated users can visit the dashboard', function () {
         ->get(route('dashboard'));
 
     $response->assertOk();
+});
+
+test('dashboard includes current team operational metrics', function () {
+    $user = User::factory()->create();
+    $client = Client::factory()->create(['team_id' => $user->current_team_id]);
+    $booking = Booking::factory()->create([
+        'team_id' => $user->current_team_id,
+        'client_id' => $client->id,
+        'booking_date' => today()->addDay(),
+        'start_time' => '09:00',
+        'end_time' => '12:00',
+    ]);
+    BillingTransaction::factory()->create([
+        'booking_id' => $booking->id,
+        'invoice_number' => 'INV-DASHBOARD-0001',
+        'total_amount' => 100,
+        'amount_paid' => 40,
+        'balance' => 60,
+    ]);
+    Inventory::factory()->create([
+        'team_id' => $user->current_team_id,
+        'item_name' => 'Low stock item',
+        'quantity' => 1,
+        'condition' => 'good',
+        'status' => 'low_stock',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard', $user->currentTeam))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('stats.totalBookings', 1)
+            ->where('stats.upcomingBookings', 1)
+            ->where('stats.revenueCollected', '40.00')
+            ->where('stats.outstandingBalance', '60.00')
+            ->where('stats.inventoryAlerts', 1));
 });
 
 test('dashboard includes pending invitations for the authenticated user', function () {

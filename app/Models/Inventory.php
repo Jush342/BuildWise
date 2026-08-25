@@ -25,4 +25,9 @@ class Inventory extends Model
     {
         return $this->belongsTo(Service::class);
     }
+
+    protected function casts(): array
+    {
+        return ['quantity' => 'integer'];
+    }
 }

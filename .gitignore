@@ -13,9 +13,11 @@
 /vendor
 .DS_Store
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
 /.agents/
+/.github/skills/
+/boost.json
 /AGENTS.md
 .phpactor.json
 .phpunit.result.cache

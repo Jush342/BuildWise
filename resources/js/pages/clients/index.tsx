@@ -1,13 +1,14 @@
-import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import type { FormEvent } from 'react';
+import ClientController from '@/actions/App/Http/Controllers/Clients/ClientController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import ClientController from '@/actions/App/Http/Controllers/Clients/ClientController';
-import { destroy, index, store, update } from '@/routes/clients';
+import { destroy, index } from '@/routes/clients';
 import type { Team } from '@/types';
 
 type Client = {
@@ -20,11 +21,18 @@ type Client = {
 
 type Props = {
     clients: Client[];
+    search: string;
 };
 
-export default function ClientsIndex({ clients }: Props) {
+export default function ClientsIndex({ clients, search: initialSearch }: Props) {
     const [editingClient, setEditingClient] = useState<Client | null>(null);
+    const [search, setSearch] = useState(initialSearch);
     const { currentTeam } = usePage<{ currentTeam: Team }>().props;
+
+    const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        router.get(index.url(currentTeam.slug), { search: search || undefined }, { preserveState: true, replace: true });
+    };
 
     return (
         <>
@@ -43,6 +51,10 @@ export default function ClientsIndex({ clients }: Props) {
 
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
                     <div className="overflow-hidden rounded-lg border">
+                        <form onSubmit={submitSearch} className="flex gap-2 border-b p-4">
+                            <Input aria-label="Search clients" placeholder="Search clients..." value={search} onChange={(event) => setSearch(event.target.value)} />
+                            <Button type="submit" variant="outline">Search</Button>
+                        </form>
                         <div className="grid grid-cols-[1.2fr_1fr_1fr_auto] gap-4 border-b bg-muted/40 px-4 py-3 text-sm font-medium">
                             <span>Name</span>
                             <span>Contact</span>
