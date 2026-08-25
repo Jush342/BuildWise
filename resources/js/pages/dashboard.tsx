@@ -1,5 +1,10 @@
 import { Head } from '@inertiajs/react';
-import { AlertTriangle, CalendarDays, CircleDollarSign, CreditCard } from 'lucide-react';
+import {
+    AlertTriangle,
+    CalendarDays,
+    CircleDollarSign,
+    CreditCard,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import PendingInvitationsModal from '@/components/pending-invitations-modal';
@@ -32,10 +37,26 @@ export default function Dashboard({ pendingInvitations = [], stats }: Props) {
             />
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <MetricCard label="Total bookings" value={stats.totalBookings} icon={CalendarDays} />
-                    <MetricCard label="Upcoming bookings" value={stats.upcomingBookings} icon={CalendarDays} />
-                    <MetricCard label="Collected revenue" value={`$${Number(stats.revenueCollected).toFixed(2)}`} icon={CircleDollarSign} />
-                    <MetricCard label="Outstanding balance" value={`$${Number(stats.outstandingBalance).toFixed(2)}`} icon={CreditCard} />
+                    <MetricCard
+                        label="Total bookings"
+                        value={stats.totalBookings}
+                        icon={CalendarDays}
+                    />
+                    <MetricCard
+                        label="Upcoming bookings"
+                        value={stats.upcomingBookings}
+                        icon={CalendarDays}
+                    />
+                    <MetricCard
+                        label="Collected revenue"
+                        value={`$${Number(stats.revenueCollected).toFixed(2)}`}
+                        icon={CircleDollarSign}
+                    />
+                    <MetricCard
+                        label="Outstanding balance"
+                        value={`$${Number(stats.outstandingBalance).toFixed(2)}`}
+                        icon={CreditCard}
+                    />
                 </div>
                 <div className="rounded-xl border p-5">
                     <div className="flex items-center gap-3">
@@ -43,7 +64,9 @@ export default function Dashboard({ pendingInvitations = [], stats }: Props) {
                         <div>
                             <p className="font-medium">Inventory alerts</p>
                             <p className="text-sm text-muted-foreground">
-                                {stats.inventoryAlerts === 0 ? 'All inventory is available.' : `${stats.inventoryAlerts} item${stats.inventoryAlerts === 1 ? '' : 's'} need attention.`}
+                                {stats.inventoryAlerts === 0
+                                    ? 'All inventory is available.'
+                                    : `${stats.inventoryAlerts} item${stats.inventoryAlerts === 1 ? '' : 's'} need attention.`}
                             </p>
                         </div>
                     </div>
@@ -53,7 +76,15 @@ export default function Dashboard({ pendingInvitations = [], stats }: Props) {
     );
 }
 
-function MetricCard({ label, value, icon: Icon }: { label: string; value: number | string; icon: LucideIcon }) {
+function MetricCard({
+    label,
+    value,
+    icon: Icon,
+}: {
+    label: string;
+    value: number | string;
+    icon: LucideIcon;
+}) {
     return (
         <div className="rounded-xl border p-5">
             <div className="flex items-center justify-between gap-4">

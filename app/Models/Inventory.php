@@ -16,11 +16,17 @@ class Inventory extends Model
 
     protected $attributes = ['quantity' => 0, 'condition' => 'good', 'status' => 'available'];
 
+    /**
+     * @return BelongsTo<Team, $this>
+     */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
     }
 
+    /**
+     * @return BelongsTo<Service, $this>
+     */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);

@@ -17,11 +17,17 @@ class BillingTransaction extends Model
 
     protected $attributes = ['amount_paid' => 0, 'payment_status' => 'unpaid'];
 
+    /**
+     * @return BelongsTo<Booking, $this>
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * @return HasMany<Payment, $this>
+     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

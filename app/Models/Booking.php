@@ -24,21 +24,33 @@ class Booking extends Model
 
     protected $attributes = ['status' => self::STATUS_CONFIRMED, 'total_amount' => 0];
 
+    /**
+     * @return BelongsTo<Team, $this>
+     */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
     }
 
+    /**
+     * @return BelongsTo<Client, $this>
+     */
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
     }
 
+    /**
+     * @return HasMany<BookingDetail, $this>
+     */
     public function details(): HasMany
     {
         return $this->hasMany(BookingDetail::class);
     }
 
+    /**
+     * @return HasOne<BillingTransaction, $this>
+     */
     public function billingTransaction(): HasOne
     {
         return $this->hasOne(BillingTransaction::class);

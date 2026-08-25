@@ -14,11 +14,17 @@ class BookingDetail extends Model
     /** @use HasFactory<BookingDetailFactory> */
     use HasFactory;
 
+    /**
+     * @return BelongsTo<Booking, $this>
+     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
+    /**
+     * @return BelongsTo<Service, $this>
+     */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);

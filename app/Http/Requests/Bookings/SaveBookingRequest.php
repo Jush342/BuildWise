@@ -35,6 +35,9 @@ class SaveBookingRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<int, callable(Validator): void>
+     */
     public function after(): array
     {
         return [function (Validator $validator): void {
@@ -48,7 +51,9 @@ class SaveBookingRequest extends FormRequest
                 $validator->errors()->add('client_id', 'The selected client is not part of this team.');
             }
 
-            $serviceIds = collect($this->input('services', []))->pluck('service_id')->filter();
+            /** @var array<int, array{service_id: int, hours_rendered: int|float|string}> $serviceItems */
+            $serviceItems = $this->validated('services', []);
+            $serviceIds = collect($serviceItems)->pluck('service_id')->filter();
 
             if ($serviceIds->diff($team->services()->whereIn('id', $serviceIds)->pluck('id'))->isNotEmpty()) {
                 $validator->errors()->add('services', 'Every selected service must belong to this team.');

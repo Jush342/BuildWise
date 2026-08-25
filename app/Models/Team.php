@@ -99,21 +99,33 @@ class Team extends Model
         return $this->hasMany(TeamInvitation::class);
     }
 
+    /**
+     * @return HasMany<Client, $this>
+     */
     public function clients(): HasMany
     {
         return $this->hasMany(Client::class);
     }
 
+    /**
+     * @return HasMany<Service, $this>
+     */
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
     }
 
+    /**
+     * @return HasMany<Booking, $this>
+     */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
+    /**
+     * @return HasMany<Inventory, $this>
+     */
     public function inventory(): HasMany
     {
         return $this->hasMany(Inventory::class);

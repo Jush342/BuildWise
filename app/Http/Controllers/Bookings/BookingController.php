@@ -45,8 +45,10 @@ class BookingController extends Controller
 
         DB::transaction(function () use ($request): void {
             $team = $request->user()->currentTeam;
-            $services = $team->services()->whereIn('id', collect($request->validated('services'))->pluck('service_id'))->get()->keyBy('id');
-            $details = collect($request->validated('services'))->map(function (array $item) use ($services): array {
+            /** @var array<int, array{service_id: int, hours_rendered: int|float|string}> $serviceItems */
+            $serviceItems = $request->validated('services');
+            $services = $team->services()->whereIn('id', collect($serviceItems)->pluck('service_id'))->get()->keyBy('id');
+            $details = collect($serviceItems)->map(function (array $item) use ($services): array {
                 $service = $services->get($item['service_id']);
                 $hours = (float) $item['hours_rendered'];
                 $rate = (float) $service->hourly_rate;

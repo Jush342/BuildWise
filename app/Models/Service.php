@@ -19,6 +19,9 @@ class Service extends Model
         'status' => 'active',
     ];
 
+    /**
+     * @return BelongsTo<Team, $this>
+     */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
@@ -31,11 +34,17 @@ class Service extends Model
         ];
     }
 
+    /**
+     * @return HasMany<BookingDetail, $this>
+     */
     public function bookingDetails(): HasMany
     {
         return $this->hasMany(BookingDetail::class);
     }
 
+    /**
+     * @return HasMany<Inventory, $this>
+     */
     public function inventory(): HasMany
     {
         return $this->hasMany(Inventory::class);

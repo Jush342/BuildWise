@@ -14,6 +14,9 @@ class Payment extends Model
     /** @use HasFactory<PaymentFactory> */
     use HasFactory;
 
+    /**
+     * @return BelongsTo<BillingTransaction, $this>
+     */
     public function billingTransaction(): BelongsTo
     {
         return $this->belongsTo(BillingTransaction::class);

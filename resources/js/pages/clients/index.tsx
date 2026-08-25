@@ -24,14 +24,21 @@ type Props = {
     search: string;
 };
 
-export default function ClientsIndex({ clients, search: initialSearch }: Props) {
+export default function ClientsIndex({
+    clients,
+    search: initialSearch,
+}: Props) {
     const [editingClient, setEditingClient] = useState<Client | null>(null);
     const [search, setSearch] = useState(initialSearch);
     const { currentTeam } = usePage<{ currentTeam: Team }>().props;
 
     const submitSearch = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        router.get(index.url(currentTeam.slug), { search: search || undefined }, { preserveState: true, replace: true });
+        router.get(
+            index.url(currentTeam.slug),
+            { search: search || undefined },
+            { preserveState: true, replace: true },
+        );
     };
 
     return (
@@ -51,9 +58,21 @@ export default function ClientsIndex({ clients, search: initialSearch }: Props) 
 
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
                     <div className="overflow-hidden rounded-lg border">
-                        <form onSubmit={submitSearch} className="flex gap-2 border-b p-4">
-                            <Input aria-label="Search clients" placeholder="Search clients..." value={search} onChange={(event) => setSearch(event.target.value)} />
-                            <Button type="submit" variant="outline">Search</Button>
+                        <form
+                            onSubmit={submitSearch}
+                            className="flex gap-2 border-b p-4"
+                        >
+                            <Input
+                                aria-label="Search clients"
+                                placeholder="Search clients..."
+                                value={search}
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
+                            />
+                            <Button type="submit" variant="outline">
+                                Search
+                            </Button>
                         </form>
                         <div className="grid grid-cols-[1.2fr_1fr_1fr_auto] gap-4 border-b bg-muted/40 px-4 py-3 text-sm font-medium">
                             <span>Name</span>
@@ -72,8 +91,12 @@ export default function ClientsIndex({ clients, search: initialSearch }: Props) 
                                         {client.address || 'No address'}
                                     </p>
                                 </div>
-                                <span className="text-sm">{client.contact || '-'}</span>
-                                <span className="truncate text-sm">{client.email || '-'}</span>
+                                <span className="text-sm">
+                                    {client.contact || '-'}
+                                </span>
+                                <span className="truncate text-sm">
+                                    {client.email || '-'}
+                                </span>
                                 <div className="flex items-center gap-1">
                                     <Button
                                         variant="ghost"
@@ -84,7 +107,10 @@ export default function ClientsIndex({ clients, search: initialSearch }: Props) 
                                         <Pencil />
                                     </Button>
                                     <Link
-                                        href={destroy({ current_team: currentTeam.slug, client: client.id })}
+                                        href={destroy({
+                                            current_team: currentTeam.slug,
+                                            client: client.id,
+                                        })}
                                         method="delete"
                                         as="button"
                                         aria-label={`Delete ${client.name}`}
@@ -97,7 +123,8 @@ export default function ClientsIndex({ clients, search: initialSearch }: Props) 
                         ))}
                         {clients.length === 0 ? (
                             <p className="p-8 text-center text-sm text-muted-foreground">
-                                No clients yet. Add your first construction client.
+                                No clients yet. Add your first construction
+                                client.
                             </p>
                         ) : null}
                     </div>
@@ -112,36 +139,68 @@ export default function ClientsIndex({ clients, search: initialSearch }: Props) 
 function ClientForm({ client }: { client: Client | null }) {
     const { currentTeam } = usePage<{ currentTeam: Team }>().props;
     const form = client
-        ? ClientController.update.form({ current_team: currentTeam.slug, client: client.id })
+        ? ClientController.update.form({
+              current_team: currentTeam.slug,
+              client: client.id,
+          })
         : ClientController.store.form(currentTeam.slug);
 
     return (
-        <Form {...form} options={{ preserveScroll: true }} className="space-y-4 rounded-lg border p-5">
+        <Form
+            {...form}
+            options={{ preserveScroll: true }}
+            className="space-y-4 rounded-lg border p-5"
+        >
             {({ errors, processing }) => (
                 <>
-                    <h2 className="font-medium">{client ? 'Edit client' : 'New client'}</h2>
+                    <h2 className="font-medium">
+                        {client ? 'Edit client' : 'New client'}
+                    </h2>
                     <div className="grid gap-2">
                         <Label htmlFor="client-name">Name</Label>
-                        <Input id="client-name" name="name" defaultValue={client?.name ?? ''} required />
+                        <Input
+                            id="client-name"
+                            name="name"
+                            defaultValue={client?.name ?? ''}
+                            required
+                        />
                         <InputError message={errors.name} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="client-contact">Contact</Label>
-                        <Input id="client-contact" name="contact" defaultValue={client?.contact ?? ''} />
+                        <Input
+                            id="client-contact"
+                            name="contact"
+                            defaultValue={client?.contact ?? ''}
+                        />
                         <InputError message={errors.contact} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="client-email">Email</Label>
-                        <Input id="client-email" name="email" type="email" defaultValue={client?.email ?? ''} />
+                        <Input
+                            id="client-email"
+                            name="email"
+                            type="email"
+                            defaultValue={client?.email ?? ''}
+                        />
                         <InputError message={errors.email} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="client-address">Address</Label>
-                        <textarea id="client-address" name="address" defaultValue={client?.address ?? ''} className="border-input bg-background min-h-24 w-full rounded-md border px-3 py-2 text-sm" />
+                        <textarea
+                            id="client-address"
+                            name="address"
+                            defaultValue={client?.address ?? ''}
+                            className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        />
                         <InputError message={errors.address} />
                     </div>
                     <Button disabled={processing} className="w-full">
-                        {processing ? 'Saving...' : client ? 'Update client' : 'Save client'}
+                        {processing
+                            ? 'Saving...'
+                            : client
+                              ? 'Update client'
+                              : 'Save client'}
                     </Button>
                 </>
             )}
