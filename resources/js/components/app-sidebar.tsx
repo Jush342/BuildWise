@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    BarChart2,
     CalendarDays,
     CreditCard,
     LayoutGrid,
@@ -25,6 +26,7 @@ import { index as billingIndex } from '@/routes/billing';
 import { index as bookingsIndex } from '@/routes/bookings';
 import { index as clientsIndex } from '@/routes/clients';
 import { index as inventoryIndex } from '@/routes/inventory';
+import { index as reportsIndex } from '@/routes/reports';
 import { index as servicesIndex } from '@/routes/services';
 import type { NavItem } from '@/types';
 
@@ -47,6 +49,9 @@ export function AppSidebar() {
         : '/';
     const inventoryUrl = page.props.currentTeam
         ? inventoryIndex(page.props.currentTeam.slug)
+        : '/';
+    const reportsUrl = page.props.currentTeam
+        ? reportsIndex(page.props.currentTeam.slug)
         : '/';
 
     const mainNavItems: NavItem[] = [
@@ -79,6 +84,11 @@ export function AppSidebar() {
             title: 'Inventory',
             href: inventoryUrl,
             icon: Package,
+        },
+        {
+            title: 'Reports',
+            href: reportsUrl,
+            icon: BarChart2,
         },
     ];
 

@@ -6,6 +6,12 @@ import ServiceController from '@/actions/App/Http/Controllers/Services/ServiceCo
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { destroy, index } from '@/routes/services';
@@ -28,6 +34,7 @@ export default function ServicesIndex({
     search: initialSearch,
 }: Props) {
     const [editingService, setEditingService] = useState<Service | null>(null);
+    const [formOpen, setFormOpen] = useState(false);
     const [search, setSearch] = useState(initialSearch);
     const { currentTeam } = usePage<{ currentTeam: Team }>().props;
 
@@ -44,97 +51,124 @@ export default function ServicesIndex({
         <>
             <Head title="Services" />
             <div className="space-y-6">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                     <Heading
                         variant="small"
                         title="Services & rates"
                         description="Set the services and hourly rates used by bookings"
                     />
-                    <Button onClick={() => setEditingService(null)}>
+                    <Button
+                        onClick={() => {
+                            setEditingService(null);
+                            setFormOpen(true);
+                        }}
+                    >
                         <Plus /> Add service
                     </Button>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-                    <div className="overflow-hidden rounded-lg border">
-                        <form
-                            onSubmit={submitSearch}
-                            className="flex gap-2 border-b p-4"
-                        >
-                            <Input
-                                aria-label="Search services"
-                                placeholder="Search services..."
-                                value={search}
-                                onChange={(event) =>
-                                    setSearch(event.target.value)
-                                }
-                            />
-                            <Button type="submit" variant="outline">
-                                Search
-                            </Button>
-                        </form>
-                        <div className="grid grid-cols-[1fr_8rem_7rem_auto] gap-4 border-b bg-muted/40 px-4 py-3 text-sm font-medium">
-                            <span>Service</span>
-                            <span>Hourly rate</span>
-                            <span>Status</span>
-                            <span className="sr-only">Actions</span>
-                        </div>
-                        {services.map((service) => (
-                            <div
-                                key={service.id}
-                                className="grid grid-cols-[1fr_8rem_7rem_auto] items-center gap-4 border-b px-4 py-4 last:border-b-0"
-                            >
-                                <span className="font-medium">
-                                    {service.name}
-                                </span>
-                                <span>
-                                    ${Number(service.hourly_rate).toFixed(2)}
-                                </span>
-                                <span className="text-sm text-muted-foreground capitalize">
-                                    {service.status}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        aria-label={`Edit ${service.name}`}
-                                        onClick={() =>
-                                            setEditingService(service)
-                                        }
-                                    >
-                                        <Pencil />
-                                    </Button>
-                                    <Link
-                                        href={destroy({
-                                            current_team: currentTeam.slug,
-                                            service: service.id,
-                                        })}
-                                        method="delete"
-                                        as="button"
-                                        aria-label={`Delete ${service.name}`}
-                                        className="inline-flex size-9 items-center justify-center rounded-md text-destructive hover:bg-destructive/10"
-                                    >
-                                        <Trash2 className="size-4" />
-                                    </Link>
-                                </div>
+                <div className="overflow-hidden rounded-lg border">
+                    <form
+                        onSubmit={submitSearch}
+                        className="flex gap-2 border-b p-4"
+                    >
+                        <Input
+                            aria-label="Search services"
+                            placeholder="Search services..."
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            className="min-w-0 flex-1"
+                        />
+                        <Button type="submit" variant="outline">
+                            Search
+                        </Button>
+                    </form>
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[500px]">
+                            <div className="grid grid-cols-[1fr_8rem_7rem_auto] gap-4 border-b bg-muted/40 px-4 py-3 text-sm font-medium">
+                                <span>Service</span>
+                                <span>Hourly rate</span>
+                                <span>Status</span>
+                                <span className="sr-only">Actions</span>
                             </div>
-                        ))}
-                        {services.length === 0 ? (
-                            <p className="p-8 text-center text-sm text-muted-foreground">
-                                No services yet. Add the work your company
-                                provides.
-                            </p>
-                        ) : null}
+                            {services.map((service) => (
+                                <div
+                                    key={service.id}
+                                    className="grid grid-cols-[1fr_8rem_7rem_auto] items-center gap-4 border-b px-4 py-4 last:border-b-0"
+                                >
+                                    <span className="font-medium">
+                                        {service.name}
+                                    </span>
+                                    <span>
+                                        ₱
+                                        {Number(service.hourly_rate).toFixed(2)}
+                                    </span>
+                                    <span className="text-sm text-muted-foreground capitalize">
+                                        {service.status}
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            aria-label={`Edit ${service.name}`}
+                                            onClick={() => {
+                                                setEditingService(service);
+                                                setFormOpen(true);
+                                            }}
+                                        >
+                                            <Pencil />
+                                        </Button>
+                                        <Link
+                                            href={destroy({
+                                                current_team: currentTeam.slug,
+                                                service: service.id,
+                                            })}
+                                            method="delete"
+                                            as="button"
+                                            aria-label={`Delete ${service.name}`}
+                                            className="inline-flex size-9 items-center justify-center rounded-md text-destructive hover:bg-destructive/10"
+                                        >
+                                            <Trash2 className="size-4" />
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-
-                    <ServiceForm service={editingService} />
+                    {services.length === 0 ? (
+                        <p className="p-8 text-center text-sm text-muted-foreground">
+                            No services yet. Add the work your company provides.
+                        </p>
+                    ) : null}
                 </div>
+
+                <Dialog open={formOpen} onOpenChange={setFormOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>
+                                {editingService
+                                    ? 'Edit service'
+                                    : 'New service'}
+                            </DialogTitle>
+                        </DialogHeader>
+                        <ServiceForm
+                            service={editingService}
+                            onClose={() => setFormOpen(false)}
+                        />
+                    </DialogContent>
+                </Dialog>
             </div>
         </>
     );
 }
 
-function ServiceForm({ service }: { service: Service | null }) {
+function ServiceForm({
+    service,
+    onClose,
+}: {
+    service: Service | null;
+    onClose: () => void;
+}) {
     const { currentTeam } = usePage<{ currentTeam: Team }>().props;
     const form = service
         ? ServiceController.update.form({
@@ -147,13 +181,11 @@ function ServiceForm({ service }: { service: Service | null }) {
         <Form
             {...form}
             options={{ preserveScroll: true }}
-            className="space-y-4 rounded-lg border p-5"
+            className="space-y-4"
+            onSuccess={() => onClose()}
         >
             {({ errors, processing }) => (
                 <>
-                    <h2 className="font-medium">
-                        {service ? 'Edit service' : 'New service'}
-                    </h2>
                     <div className="grid gap-2">
                         <Label htmlFor="service-name">Service name</Label>
                         <Input
@@ -190,13 +222,23 @@ function ServiceForm({ service }: { service: Service | null }) {
                         </select>
                         <InputError message={errors.status} />
                     </div>
-                    <Button disabled={processing} className="w-full">
-                        {processing
-                            ? 'Saving...'
-                            : service
-                              ? 'Update service'
-                              : 'Save service'}
-                    </Button>
+                    <div className="flex gap-3 pt-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={onClose}
+                        >
+                            Cancel
+                        </Button>
+                        <Button disabled={processing} className="flex-1">
+                            {processing
+                                ? 'Saving...'
+                                : service
+                                  ? 'Update service'
+                                  : 'Save service'}
+                        </Button>
+                    </div>
                 </>
             )}
         </Form>

@@ -69,6 +69,7 @@ export default function BillingIndex({
                         placeholder="Search invoice, client, or status..."
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
+                        className="min-w-0 flex-1"
                     />
                     <Button type="submit" variant="outline">
                         Search
@@ -100,7 +101,7 @@ export default function BillingIndex({
                                             Total
                                         </p>
                                         <p className="font-medium">
-                                            $
+                                            ₱
                                             {Number(
                                                 transaction.total_amount,
                                             ).toFixed(2)}
@@ -111,7 +112,7 @@ export default function BillingIndex({
                                             Paid
                                         </p>
                                         <p className="font-medium">
-                                            $
+                                            ₱
                                             {Number(
                                                 transaction.amount_paid,
                                             ).toFixed(2)}
@@ -122,7 +123,7 @@ export default function BillingIndex({
                                             Balance
                                         </p>
                                         <p className="font-medium">
-                                            $
+                                            ₱
                                             {Number(
                                                 transaction.balance,
                                             ).toFixed(2)}
@@ -144,7 +145,7 @@ export default function BillingIndex({
                                                     {payment.method}
                                                 </span>
                                                 <span>
-                                                    $
+                                                    ₱
                                                     {Number(
                                                         payment.amount,
                                                     ).toFixed(2)}
