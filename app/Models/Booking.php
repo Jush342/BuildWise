@@ -4,12 +4,23 @@ namespace App\Models;
 
 use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property Carbon $booking_date
+ * @property string $status
+ * @property string|float $total_amount
+ * @property-read Client $client
+ * @property-read BillingTransaction|null $billingTransaction
+ * @property-read Collection<int, BookingDetail> $details
+ */
 #[Fillable(['team_id', 'client_id', 'booking_date', 'start_time', 'end_time', 'status', 'total_amount'])]
 class Booking extends Model
 {
