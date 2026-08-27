@@ -26,10 +26,18 @@ class InventoryController extends Controller
             }))
             ->with('service:id,name')
             ->orderBy('item_name')
+            ->take(100)
+            ->get();
+
+        $movements = $request->user()->currentTeam->inventoryMovements()
+            ->with(['inventory:id,item_name', 'user:id,name', 'booking:id,client_id', 'booking.client:id,name'])
+            ->latest()
+            ->take(25)
             ->get();
 
         return Inertia::render('inventory/index', [
             'inventory' => $inventory,
+            'movements' => $movements,
             'services' => $request->user()->currentTeam->services()
                 ->where('status', 'active')
                 ->orderBy('name')
@@ -42,7 +50,19 @@ class InventoryController extends Controller
     {
         Gate::authorize('create', Inventory::class);
 
-        $request->user()->currentTeam->inventory()->create($request->validated());
+        $inventory = $request->user()->currentTeam->inventory()->create($request->validated());
+
+        if ($inventory->quantity > 0) {
+            $inventory->movements()->create([
+                'team_id' => $inventory->team_id,
+                'user_id' => $request->user()->id,
+                'type' => 'initial_stock',
+                'quantity_change' => $inventory->quantity,
+                'previous_quantity' => 0,
+                'new_quantity' => $inventory->quantity,
+                'reason' => 'Initial stock intake',
+            ]);
+        }
 
         return to_route('inventory.index', ['current_team' => $request->user()->currentTeam]);
     }
@@ -51,7 +71,21 @@ class InventoryController extends Controller
     {
         Gate::authorize('update', $inventory);
 
+        $previousQuantity = (int) $inventory->quantity;
         $inventory->update($request->validated());
+        $newQuantity = (int) $inventory->quantity;
+
+        if ($previousQuantity !== $newQuantity) {
+            $inventory->movements()->create([
+                'team_id' => $inventory->team_id,
+                'user_id' => $request->user()->id,
+                'type' => $newQuantity > $previousQuantity ? 'restock' : 'adjustment',
+                'quantity_change' => $newQuantity - $previousQuantity,
+                'previous_quantity' => $previousQuantity,
+                'new_quantity' => $newQuantity,
+                'reason' => 'Manual stock update',
+            ]);
+        }
 
         return to_route('inventory.index', ['current_team' => $request->user()->currentTeam]);
     }

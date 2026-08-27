@@ -26,6 +26,7 @@ class BillingController extends Controller
                     ->orWhereHas('booking.client', fn ($clientQuery) => $clientQuery->where('name', 'like', "%{$search}%"));
             }))
             ->latest()
+            ->take(100)
             ->get();
 
         return Inertia::render('billing/index', [

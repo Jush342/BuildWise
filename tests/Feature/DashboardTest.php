@@ -29,7 +29,7 @@ test('authenticated users can visit the dashboard', function () {
     $response->assertOk();
 });
 
-test('dashboard includes current team operational metrics', function () {
+test('dashboard includes current team operational metrics and revenue analytics', function () {
     $user = User::factory()->create();
     $client = Client::factory()->create(['team_id' => $user->current_team_id]);
     $booking = Booking::factory()->create([
@@ -45,6 +45,7 @@ test('dashboard includes current team operational metrics', function () {
         'total_amount' => 100,
         'amount_paid' => 40,
         'balance' => 60,
+        'payment_status' => 'partial',
     ]);
     Inventory::factory()->create([
         'team_id' => $user->current_team_id,
@@ -61,7 +62,11 @@ test('dashboard includes current team operational metrics', function () {
             ->where('stats.upcomingBookings', 1)
             ->where('stats.revenueCollected', '40.00')
             ->where('stats.outstandingBalance', '60.00')
-            ->where('stats.inventoryAlerts', 1));
+            ->where('stats.inventoryAlerts', 1)
+            ->has('revenueTrend', 6)
+            ->where('paymentStatusSummary.partialCount', 1)
+            ->where('paymentStatusSummary.partialAmount', 100)
+            ->has('recentBookings', 1));
 });
 
 test('dashboard includes pending invitations for the authenticated user', function () {

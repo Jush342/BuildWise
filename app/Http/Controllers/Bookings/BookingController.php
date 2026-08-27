@@ -29,6 +29,7 @@ class BookingController extends Controller
             ->with(['client', 'details.service', 'billingTransaction'])
             ->latest('booking_date')
             ->latest('start_time')
+            ->take(100)
             ->get();
 
         return Inertia::render('bookings/index', [
@@ -83,7 +84,78 @@ class BookingController extends Controller
     {
         Gate::authorize('update', $booking);
 
-        $booking->update($request->validated());
+        DB::transaction(function () use ($request, $booking): void {
+            if ($request->has('client_id') && $request->has('services')) {
+                $team = $request->user()->currentTeam;
+                /** @var array<int, array{service_id: int, hours_rendered: int|float|string}> $serviceItems */
+                $serviceItems = $request->validated('services');
+                $services = $team->services()->whereIn('id', collect($serviceItems)->pluck('service_id'))->get()->keyBy('id');
+                $details = collect($serviceItems)->map(function (array $item) use ($services): array {
+                    $service = $services->get($item['service_id']);
+                    $hours = (float) $item['hours_rendered'];
+                    $rate = (float) $service->hourly_rate;
+
+                    return [
+                        'service_id' => $service->id,
+                        'hours_rendered' => $hours,
+                        'hourly_rate' => $rate,
+                        'subtotal' => round($hours * $rate, 2),
+                    ];
+                });
+                $total = $details->sum('subtotal');
+
+                $payload = [
+                    'client_id' => $request->validated('client_id'),
+                    'booking_date' => $request->validated('booking_date'),
+                    'start_time' => $request->validated('start_time'),
+                    'end_time' => $request->validated('end_time'),
+                    'total_amount' => $total,
+                ];
+
+                if ($request->filled('status')) {
+                    $payload['status'] = $request->validated('status');
+                }
+
+                $booking->update($payload);
+
+                $booking->details()->delete();
+                $booking->details()->createMany($details->all());
+
+                if ($booking->billingTransaction) {
+                    $amountPaid = (float) $booking->billingTransaction->amount_paid;
+                    $balance = max(0.0, round($total - $amountPaid, 2));
+                    $paymentStatus = $balance === 0.0 && $total > 0
+                        ? 'paid'
+                        : ($amountPaid > 0 ? 'partial' : 'unpaid');
+
+                    $booking->billingTransaction->update([
+                        'total_amount' => $total,
+                        'balance' => $balance,
+                        'payment_status' => $paymentStatus,
+                    ]);
+                }
+            } elseif ($request->has('status')) {
+                $booking->update(['status' => $request->validated('status')]);
+            }
+
+            if ($request->validated('status') === Booking::STATUS_COMPLETED) {
+                $booking->loadMissing(['details', 'client']);
+                $team = $request->user()->currentTeam;
+
+                foreach ($booking->details as $detail) {
+                    $inventoryItems = $team->inventory()->where('service_id', $detail->service_id)->get();
+                    foreach ($inventoryItems as $item) {
+                        $item->adjustStock(
+                            quantityChange: -1,
+                            type: 'booking_deduction',
+                            reason: "Auto-deducted for completed Booking #{$booking->id} ({$booking->client->name})",
+                            bookingId: $booking->id,
+                            userId: $request->user()->id
+                        );
+                    }
+                }
+            }
+        });
 
         return to_route('bookings.index', ['current_team' => $request->user()->currentTeam]);
     }

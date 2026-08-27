@@ -137,17 +137,36 @@ trait HasTeams
     {
         return $this->teams()
             ->get()
-            ->map(fn (Team $team) => ! $includeCurrent && $this->isCurrentTeam($team) ? null : $this->toUserTeam($team))
+            ->map(fn (Team $team) => ! $includeCurrent && $this->isCurrentTeam($team) ? null : $this->toUserTeamFromPivot($team))
             ->filter()
             ->values();
     }
 
     /**
-     * Get the user's team as a UserTeam object.
+     * Get the user's team as a UserTeam object using eager-loaded pivot.
      */
     public function toUserTeam(Team $team): UserTeam
     {
         $role = $this->teamRole($team);
+
+        return new UserTeam(
+            id: $team->id,
+            name: $team->name,
+            slug: $team->slug,
+            isPersonal: $team->is_personal,
+            role: $role?->value,
+            roleLabel: $role?->label(),
+            isCurrent: $this->isCurrentTeam($team),
+        );
+    }
+
+    /**
+     * Build UserTeam from eager-loaded pivot (avoids N+1).
+     */
+    private function toUserTeamFromPivot(Team $team): UserTeam
+    {
+        $role = $team->pivot?->role;
+        $role = $role instanceof TeamRole ? $role : null;
 
         return new UserTeam(
             id: $team->id,
@@ -175,6 +194,12 @@ trait HasTeams
             canRemoveMember: $role?->hasPermission(TeamPermission::RemoveMember) ?? false,
             canCreateInvitation: $role?->hasPermission(TeamPermission::CreateInvitation) ?? false,
             canCancelInvitation: $role?->hasPermission(TeamPermission::CancelInvitation) ?? false,
+            canManageClients: $role?->hasPermission(TeamPermission::ManageClients) ?? false,
+            canManageServices: $role?->hasPermission(TeamPermission::ManageServices) ?? false,
+            canManageBookings: $role?->hasPermission(TeamPermission::ManageBookings) ?? false,
+            canManageBilling: $role?->hasPermission(TeamPermission::ManageBilling) ?? false,
+            canManageInventory: $role?->hasPermission(TeamPermission::ManageInventory) ?? false,
+            canViewReports: $role?->hasPermission(TeamPermission::ViewReports) ?? false,
         );
     }
 

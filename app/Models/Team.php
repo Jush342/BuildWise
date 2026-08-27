@@ -29,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Service> $services
  * @property-read Collection<int, Booking> $bookings
  * @property-read Collection<int, Inventory> $inventory
+ * @property-read Membership|null $pivot
  */
 #[Fillable(['name', 'slug', 'is_personal'])]
 class Team extends Model
@@ -129,6 +130,14 @@ class Team extends Model
     public function inventory(): HasMany
     {
         return $this->hasMany(Inventory::class);
+    }
+
+    /**
+     * @return HasMany<InventoryMovement, $this>
+     */
+    public function inventoryMovements(): HasMany
+    {
+        return $this->hasMany(InventoryMovement::class);
     }
 
     /**
