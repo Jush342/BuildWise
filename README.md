@@ -119,6 +119,9 @@ composer run dev
 - Payment recording and balance tracking
 - Inventory CRUD management
 - Dashboard operational metrics and inventory alerts
+- Interactive 7-day weekly calendar with appointment slot booking
+- Revenue charts & monthly financial analytics
+- Booking editing and rescheduling with live total calculation
 - Temporary BuildWise landing page
 
 ## Project Structure
