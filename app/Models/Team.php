@@ -159,4 +159,18 @@ class Team extends Model
     {
         return 'slug';
     }
+
+    /**
+     * Resolve the primary business team.
+     *
+     * This is the team that self-registered client accounts are linked to.
+     * It uses the first non-personal team, creating a default one if needed.
+     */
+    public static function primaryBusiness(): self
+    {
+        return static::query()
+            ->where('is_personal', false)
+            ->orderBy('id')
+            ->firstOrCreate(['name' => 'BuildWise Business']);
+    }
 }

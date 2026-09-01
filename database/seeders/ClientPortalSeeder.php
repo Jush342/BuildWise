@@ -17,26 +17,43 @@ class ClientPortalSeeder extends Seeder
     {
         $team = Team::firstOrCreate(['name' => 'Client Portal Team']);
 
-        $user = User::create([
-            'name' => 'Client User',
-            'email' => 'client@example.com',
-            'password' => Hash::make('password'),
-            'current_team_id' => $team->id,
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'client@example.com'],
+            [
+                'name' => 'Client User',
+                'password' => Hash::make('password'),
+                'current_team_id' => $team->id,
+            ],
+        );
 
-        $user->teams()->attach($team, ['role' => 'member']);
+        if (! $user->teams()->where('teams.id', $team->id)->exists()) {
+            $user->teams()->attach($team, ['role' => 'member']);
+        }
+
+        $client = Client::firstOrCreate(
+            [
+                'team_id' => $team->id,
+                'email' => 'client@example.com',
+            ],
+            [
+                'user_id' => $user->id,
+                'name' => 'Client User',
+                'contact' => '09171234567',
+                'address' => '123 Test Street, Metro Manila',
+            ],
+        );
+
+        // Only seed demo bookings once per client.
+        if ($client->bookings()->exists() || $client->wasRecentlyCreated === false) {
+            $this->command->info('Client portal seeder skipped: client@example.com already exists.');
+            $this->command->info('  Email: client@example.com');
+            $this->command->info('  Password: password');
+
+            return;
+        }
 
         $teamId = $team->id;
         $services = Service::where('team_id', $teamId)->take(3)->get();
-
-        $client = Client::create([
-            'team_id' => $teamId,
-            'user_id' => $user->id,
-            'name' => 'Client User',
-            'contact' => '09171234567',
-            'email' => 'client@example.com',
-            'address' => '123 Test Street, Metro Manila',
-        ]);
 
         // Create 3 bookings with billing transactions
         $statuses = ['completed', 'confirmed', 'cancelled'];

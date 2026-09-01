@@ -17,6 +17,25 @@ trait RedirectsToCurrentTeam
         return "/{$team->slug}{$redirect}";
     }
 
+    /**
+     * Get the redirect path after authentication.
+     *
+     * Users linked to a client record are sent to the client portal; all other
+     * users (team members / staff) are sent to their current team dashboard.
+     */
+    protected function redirectPathForAuthenticatedUser(Request $request, string $redirect): string
+    {
+        $user = $request->user();
+
+        abort_if(! $user, 403);
+
+        if ($user->client()->exists()) {
+            return '/client-portal/bookings';
+        }
+
+        return $this->redirectPathForCurrentTeam($request, $redirect);
+    }
+
     protected function currentTeam(Request $request): Team
     {
         $user = $request->user();

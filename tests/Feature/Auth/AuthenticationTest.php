@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TeamRole;
+use App\Models\Client;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
@@ -45,6 +46,22 @@ test('users can authenticate using the login screen', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard'));
+});
+
+test('linked clients are redirected to the client portal after authentication', function () {
+    $user = User::factory()->create();
+    Client::factory()->create([
+        'team_id' => $user->current_team_id,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertRedirect('/client-portal/bookings');
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {

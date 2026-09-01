@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
+Route::inertia('terms', 'legal/terms')->name('terms');
+Route::inertia('privacy', 'legal/privacy')->name('privacy');
+
 Route::middleware(['auth', EnsureClientAccess::class])->prefix('client-portal')->group(function () {
     Route::get('bookings', [PortalBookingController::class, 'index'])->name('client-portal.bookings');
     Route::get('invoices', [PortalInvoiceController::class, 'index'])->name('client-portal.invoices');
